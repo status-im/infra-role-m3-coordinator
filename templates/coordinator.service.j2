@@ -1,0 +1,15 @@
+[Unit]
+Description="M3 Coordinator for relaying metrics to M3DB"
+Documentation=https://m3db.github.io/m3/
+Requires=network-online.target
+After=network-online.target
+ConditionFileNotEmpty={{ m3_coordinator_conf_path }}
+
+[Service]
+User={{ m3_coordinator_service_user }}
+ExecStart={{ m3_coordinator_bin_path }} -f {{ m3_coordinator_conf_path }}
+Restart=on-failure
+LimitNOFILE=3000000
+
+[Install]
+WantedBy=multi-user.target

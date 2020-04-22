@@ -1,0 +1,68 @@
+---
+m3_coordinator_version: '0.15.0-rc.3'
+
+m3_coordinator_tarball: 'm3_{{ m3_coordinator_version }}_linux_amd64.tar.gz'
+m3_coordinator_tarball_md5: '107ce036b8f4965790ebe4c81480808c'
+m3_coordinator_tarball_url: 'https://github.com/m3db/m3/releases/download/v{{ m3_coordinator_version }}/{{ m3_coordinator_tarball }}'
+
+m3_coordinator_bin_path: '/usr/local/bin/m3coordinator'
+
+m3_coordinator_service_name: 'm3coordinator'
+m3_coordinator_service_user: 'nobody'
+
+m3_coordinator_conf_path: '/etc/{{ m3_coordinator_service_name }}.conf'
+m3_coordinator_data_path: '/var/lib/{{ m3_coordinator_service_name }}'
+m3_coordinator_cache_path: '{{ m3_coordinator_data_path }}/cache'
+
+m3_coordinator_log_level: 'info'
+
+# Listening ports
+# Query API port
+m3_coordinator_query_port: 7201
+# Prometheus metrics
+m3_coordinator_metrics_port: 7203
+# Address to listen on for local thrift/tchannel APIs.
+m3_coordinator_listen_port: 9000
+
+# Consul querying for ETCD
+consul_catalog_url: 'http://localhost:8500/v1/catalog'
+m3_coordinator_etcd_service_name: 'etcd'
+
+m3_coordinator_config:
+  listenAddress:
+    value: '0.0.0.0:{{ m3_coordinator_query_port }}'
+  
+  logging:
+    level: info
+  
+  metrics:
+    scope:
+      prefix: 'coordinator'
+    prometheus:
+      handlerPath: '/metrics'
+      listenAddress: '0.0.0.0:{{ m3_coordinator_metrics_port }}'
+    sanitization: prometheus
+    samplingRate: 1.0
+    extended: none
+  
+  tagOptions:
+    idScheme: quoted
+  
+  clusters:
+    - namespaces:
+        - namespace: default
+          retention: 48h
+          type: unaggregated
+
+      client:
+        writeConsistencyLevel: majority
+        readConsistencyLevel: unstrict_majority
+        config:
+          service:
+            env: default_env
+            zone: embedded
+            service: m3db
+            cacheDir: '{{ m3_coordinator_cache_path }}'
+            etcdClusters:
+              - zone: embedded
+                endpoints: '{{ m3_coordinator_etcd_endpoints | mandatory }}'

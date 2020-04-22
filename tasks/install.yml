@@ -1,0 +1,19 @@
+---
+- name: M3 Coordinator | Download tarball
+  get_url:
+    url: '{{ m3_coordinator_tarball_url }}'
+    dest: '/tmp/{{ m3_coordinator_tarball }}'
+    checksum: 'md5:{{ m3_coordinator_tarball_md5 }}'
+
+- name: M3 Coordinator | Unpack tarball
+  unarchive:
+    src: '/tmp/{{ m3_coordinator_tarball }}'
+    dest: '/tmp'
+    remote_src: true
+
+- name: M3 Coordinator | Install binary
+  copy:
+    src: '/tmp/m3_{{ m3_coordinator_version }}_linux_amd64/m3coordinator'
+    dest: '{{ m3_coordinator_bin_path }}'
+    mode: 0755
+    remote_src: true

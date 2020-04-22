@@ -1,0 +1,25 @@
+---
+- name: M3 Coordinator | Create directories for service
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ m3_coordinator_service_user }}'
+    mode: 0775
+  with_items:
+    - '{{ m3_coordinator_data_path }}'
+    - '{{ m3_coordinator_cache_path }}'
+
+- name: M3 Coordinator | Create systemd Unit file
+  template:
+    src: coordinator.service.j2
+    dest: '/lib/systemd/system/{{ m3_coordinator_service_name }}.service'
+    mode: 0644
+
+- name: M3 Coordinator | reload systemctl
+  command: systemctl daemon-reload
+
+- name: M3 Coordinator | Start systemd service
+  service:
+    name: '{{ m3_coordinator_service_name }}.service'
+    state: restarted
+    enabled: true
